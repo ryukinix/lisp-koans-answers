@@ -20,6 +20,7 @@
  :loops
  :triangle-project
  :scoring-project
+ :format
  :type-checking
  :clos
  :dice-project

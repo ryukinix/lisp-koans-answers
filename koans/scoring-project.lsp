@@ -49,9 +49,26 @@
 ;
 ; Your goal is to write the score method.
 
+
+(defun select-score (dice-num count)
+  ;; select score based on rules above
+  ;; dice-num :: dice number
+  ;; count :: count of dice on plays
+  (cond ((>= count 3)
+         (cond ((= dice-num 1)
+                (+ 1000 (select-score dice-num (- count 3))))
+               ((= dice-num 5)
+                (+ 500 (select-score dice-num (- count 3))))
+               (t (* dice-num 100))))
+        ((= dice-num 1) (* 100 count))
+        ((= dice-num 5) (* 50 count))
+        (t 0)))
+
 (defun score (dice)
-  ; You need to write this method
-)
+  (let ((count (loop for d in '(1 2 3 4 5 6)
+                     collect (list d (count d dice)))))
+    (loop for (n c) in count
+          sum (select-score n c))))
 
 (define-test test-score-of-an-empty-list-is-zero
     (assert-equal 0 (score nil)))

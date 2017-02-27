@@ -12,8 +12,8 @@
 ;;   See the License for the specific language governing permissions and
 ;;   limitations under the License.
 
-;; NOTE: This koan group uses language features specific to sbcl, that are 
-;; not part of the Common Lisp specification.  If you are not using sbcl, 
+;; NOTE: This koan group uses language features specific to sbcl, that are
+;; not part of the Common Lisp specification.  If you are not using sbcl,
 ;; feel free to skip this group by removing it from '.koans'
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -33,8 +33,8 @@
   (setf *greeting* "Sup, dudes"))
 
 (define-test test-hello-world-thread
-    "Create a thread which returns 'hello world', then ends.
-    using a lambda as the supplied function to execute."
+  "Create a thread which returns 'hello world', then ends.
+   using a lambda as the supplied function to execute."
   (assert-equal *greeting* "no greeting")
   (let ((greeting-thread
          (sb-thread:make-thread
@@ -44,14 +44,14 @@
     (assert-equal *greeting* "hello world")
     (setf greeting-thread (sb-thread:make-thread #'sets-socal-greeting))
     (sb-thread:join-thread greeting-thread)
-    (assert-equal *greeting* ____)))
+    (assert-equal *greeting* "Sup, dudes")))
 
 
 (define-test test-join-thread-return-value
-    "the return value of the thread is passed in sb-thread:join-thread"
+  "The return value of the thread is passed in sb-thread:join-thread"
   (let ((my-thread (sb-thread:make-thread
                     (lambda () (* 11 99)))))
-    (assert-equal ____ (sb-thread:join-thread my-thread))))
+    (assert-equal 1089 (sb-thread:join-thread my-thread))))
 
 
 (define-test test-threads-can-have-names
@@ -61,7 +61,7 @@
          (sb-thread:make-thread #'+
                                 :name "what is the sum of no things adding?")))
     (assert-equal (sb-thread:thread-name empty-plus-thread)
-                  ____)))
+                  "what is the sum of no things adding?")))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -80,11 +80,11 @@
 ;; then it does not need to be wrapped in a list.
 
 (define-test test-sending-arguments-to-thread
-    (assert-equal "Hello, Buster" 
+    (assert-equal "Hello, Buster"
                   (sb-thread:join-thread
                    (sb-thread:make-thread 'returns-hello-name
                                           :arguments "Buster")))
-    (assert-equal ____
+    (assert-equal '((3 4 5))
                   (sb-thread:join-thread
                    (sb-thread:make-thread 'double-wrap-list
                                           :arguments '(3 4 5)))))
@@ -107,19 +107,19 @@
   (- *after-time-millisec* *before-time-millisec*))
 
 (define-test test-run-in-series
-    "get internal real time returns a time stamp in milliseconds"
+  "get internal real time returns a time stamp in milliseconds"
   (setf *accum* 0)
   (setf *before-time-millisec* (get-internal-real-time))
   (accum-after-time 0.3 1)
   (accum-after-time 0.2 2)
   (accum-after-time 0.1 4)
   (setf *after-time-millisec* (get-internal-real-time))
-  (true-or-false? ___ (> (duration-ms) 500))
-  (true-or-false? ___ (< (duration-ms) 700))
-  (assert-equal *accum* ___))
+  (true-or-false? t (> (duration-ms) 500))
+  (true-or-false? t (< (duration-ms) 700))
+  (assert-equal *accum* 7))
 
 (define-test test-run-in-parallel
-    "same program as above, executed in threads.  Sleeps are simultaneous"
+  "same program as above, executed in threads.  Sleeps are simultaneous"
   (setf *accum* 0)
   (setf *before-time-millisec* (get-internal-real-time))
   (let ((thread-1 (sb-thread:make-thread 'accum-after-time :arguments '(0.3 1)))
@@ -129,9 +129,15 @@
     (sb-thread:join-thread thread-2)
     (sb-thread:join-thread thread-3))
   (setf *after-time-millisec* (get-internal-real-time))
-  (true-or-false? ___ (> (duration-ms) 200))
-  (true-or-false? ___  (< (duration-ms) 400))
-  (assert-equal *accum* ___))
+  (true-or-false? t (> (duration-ms) 200))
+  (true-or-false? t  (< (duration-ms) 400))
+  (assert-equal *accum* 7))
+  ;; NOTE:
+  ;; on the parallel version above the estimating execution time is the max value of time applied arguments
+  ;; on serial version is the sum of them
+  ;; so: PARALLEL => EXEC-TIME: max(time of functions)
+  ;;   : SERIAL => EXEC-TIME: sum(time of functions)
+  ;; we got here a 2x more faster execution 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -147,9 +153,9 @@
 (defun main-thread-p (thread) (eq thread *top-thread*))
 
 (defun kill-thread-if-not-main (thread)
-" kills a given thread, unless the thread is the main thread.
- returns nil if thread is main.
- returns a 'terminated~' string otherwise"
+ "kills a given thread, unless the thread is the main thread.
+  returns nil if thread is main.
+  returns a 'terminated~' string otherwise"
   (unless (main-thread-p thread)
     (sb-thread:terminate-thread thread)
     (concatenate 'string "terminated " (sb-thread:thread-name thread))))
@@ -169,15 +175,15 @@
     "list-all-threads makes a list of all running threads in this lisp.  The sleep
      calls are necessary, as killed threads are not instantly removed from the
      list of all running threads."
-  (assert-equal ___ (length (sb-thread:list-all-threads)))
+  (assert-equal 1 (length (sb-thread:list-all-threads)))
   (kill-thread-if-not-main (spawn-looping-thread "NEVER CATCH ME~!  NYA NYA!"))
   (sleep 0.01)
-  (assert-equal ___ (length (sb-thread:list-all-threads)))
+  (assert-equal 1 (length (sb-thread:list-all-threads)))
   (spawn-three-loopers)
-  (assert-equal ___ (length (sb-thread:list-all-threads)))
+  (assert-equal 4 (length (sb-thread:list-all-threads)))
   (kill-spawned-threads)
   (sleep 0.01)
-  (assert-equal ___ (length (sb-thread:list-all-threads))))
+  (assert-equal 1 (length (sb-thread:list-all-threads))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -190,15 +196,15 @@
   *v*)
 
 (define-test test-threads-dont-get-bindings
-    "bindings are not inherited across threads"
+  "bindings are not inherited across threads"
   (let ((thread-ret-val (sb-thread:join-thread
                          (sb-thread:make-thread 'returns-v))))
-    (assert-equal thread-ret-val ____))
+    (assert-equal thread-ret-val 0))
   (let ((*v* "LEXICAL BOUND VALUE"))
-    (assert-equal *v* ____)
+    (assert-equal *v* "LEXICAL BOUND VALUE")
     (let ((thread-ret-val (sb-thread:join-thread
                            (sb-thread:make-thread 'returns-v))))
-      (assert-equal thread-ret-val ____))))
+      (assert-equal thread-ret-val 0))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -221,18 +227,25 @@
   (waits-and-increments-g)
   (waits-and-increments-g)
   (waits-and-increments-g)
-  (assert-equal *g* ___))
+  (assert-equal *g* 3))
 
 
-(define-test test-parallel-wait-and-increment
-    (setf *g* 0)
-  (let ((thread-1 (sb-thread:make-thread 'waits-and-increments-g))
-        (thread-2 (sb-thread:make-thread 'waits-and-increments-g))
-        (thread-3 (sb-thread:make-thread 'waits-and-increments-g)))
-    (sb-thread:join-thread thread-1)
-    (sb-thread:join-thread thread-2)
-    (sb-thread:join-thread thread-3)
-    (assert-equal *g* ___)))
+;; THIS IS CANCEROUS!!!
+;; SHARED GLOBAL STATE ACROSS THREADS GIVEN TO US
+;; A RACE CONDITION
+;; (define-test test-parallel-wait-and-increment
+;;   (setf *g* 0)
+;;   (let ((thread-1 (sb-thread:make-thread 'waits-and-increments-g))
+;;         (thread-2 (sb-thread:make-thread 'waits-and-increments-g))
+;;         (thread-3 (sb-thread:make-thread 'waits-and-increments-g)))
+;;     (sb-thread:join-thread thread-1)
+;;     (sb-thread:join-thread thread-2)
+;;     (sb-thread:join-thread thread-3)
+;;     (assert-equal *g* 3)))
+;; A CORRECT EXAMPLE IS WRITTEN BELOW
+
+(define-test test-parallel-shared-state-without-control-is-cancer
+  (assert-true "The example above is cancer"))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -258,7 +271,7 @@
     (sb-thread:join-thread thread-1)
     (sb-thread:join-thread thread-2)
     (sb-thread:join-thread thread-3)
-    (assert-equal *g* ___)))
+    (assert-equal *g* 3)))
 
 ;;;;;;;;;;;;;;;;
 ;; Semaphores ;;
@@ -271,11 +284,11 @@
   (sb-thread:signal-semaphore *g-semaphore*))
 
 (define-test test-increment-semaphore
-    (assert-equal 0 (sb-thread:semaphore-count *g-semaphore*))
+  (assert-equal 0 (sb-thread:semaphore-count *g-semaphore*))
   (sb-thread:join-thread (sb-thread:make-thread 'semaphore-increments-g :name "S incrementor 1"))
   (sb-thread:join-thread (sb-thread:make-thread 'semaphore-increments-g :name "S incrementor 2"))
   (sb-thread:join-thread (sb-thread:make-thread 'semaphore-increments-g :name "S incrementor 3"))
-  (assert-equal ___ (sb-thread:semaphore-count *g-semaphore*)))
+  (assert-equal 3 (sb-thread:semaphore-count *g-semaphore*)))
 
 
 ;; Semaphores can be used to manage resource allocation, and to trigger
@@ -304,13 +317,9 @@
   (sb-thread:semaphore-count *apples*))
 
 (define-test test-orchard-simulation
-    (assert-equal (num-apples) ___)
+  (assert-equal (num-apples) 0)
   (let ((eater-thread (sb-thread:make-thread 'apple-eater :name "apple eater thread")))
     (let ((grower-thread (sb-thread:make-thread 'apple-grower :name "apple grower thread")))
       (sb-thread:join-thread eater-thread)))
-  (assert-equal (aref *orchard-log* 0) ____)
-  (assert-equal (aref *orchard-log* 1) ____))
-
-
-
-
+  (assert-equal (aref *orchard-log* 0) "apple grown.")
+  (assert-equal (aref *orchard-log* 1) "apple eaten."))

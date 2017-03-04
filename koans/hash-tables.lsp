@@ -118,7 +118,7 @@
 
 (define-test test-make-your-own-hash-table
     "make a hash table that meets the following conditions"
-  (let ((colors (make-hash-table))
+  (let ((colors (make-hash-table :test #'equal))
         values)
 
     (setf (gethash "blue" colors) (list 0 0 1))

@@ -26,11 +26,11 @@
 
 (define-test test-format-with-plain-text
   "If there is no format specifier, FORMAT just return the string
-itself."
+    itself."
   (assert-equal "this is plain text." (format nil "this is plain text.")))
 
 (define-test test-format-with-general-specifier
-  "~a is a general specifier that translate to the print form of a
+  "~a is a general specifier that translates to the print form of a
     parameter."
   (assert-equal "42" (format nil "~a" 42))
   (assert-equal "C" (format nil "~a" #\C))
